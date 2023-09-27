@@ -12,7 +12,7 @@ class SearchEngine:
     A Search Engine utility that performs keyword and semantic searches using Weaviate, and 
     reranks responses using Cohere.
     """
-    WIKIPEDIA_PROPERTIES = ["text", "title", "url", "views", "lang", "_additional {distance}"]
+    WIKIPEDIA_PROPERTIES = ["text", "title", "url", "views", "lang", "_additional { distance score }"]
 
     def __init__(self):
         logging.basicConfig(level=logging.INFO,
@@ -109,6 +109,47 @@ class SearchEngine:
         - list: List of top articles based on semantic similarity.
         """
         data = self.with_neartext(query, lang=lang, top_n=top_n)
+        return pd.DataFrame.from_dict(data, orient='columns')
+    
+    def with_hybrid(self, query, lang='en', top_n=10) -> list:
+        """
+        Performs a hybrid search on Wikipedia Articles using embeddings stored in Weaviate.
+
+        Parameters:
+        - query (str): The search query.
+        - lang (str, optional): The language of the articles. Default is 'en'.
+        - top_n (int, optional): The number of top results to return. Default is 10.
+
+        Returns:
+        - list: List of top articles based on hybrid scoring.
+        """	
+        where_filter = {
+            "path": ["lang"],
+            "operator": "Equal",
+            "valueString": lang
+        }
+        response = (
+            self.weaviate.query.get("Articles", self.WIKIPEDIA_PROPERTIES)
+            .with_hybrid(query=query)
+            .with_where(where_filter)
+            .with_limit(top_n)
+            .do()
+        )
+        return response["data"]["Get"]["Articles"]
+    
+    def with_hybrid_as_df(self, query, lang='en', top_n=10) -> pd.DataFrame:
+        """
+        Performs a hybrid search on Wikipedia Articles using embeddings stored in Weaviate.
+
+        Parameters:
+        - query (str): The search query.
+        - lang (str, optional): The language of the articles. Default is 'en'.
+        - top_n (int, optional): The number of top results to return. Default is 10.
+
+        Returns:
+        - pandas.DataFrame: DataFrame of top articles based on hybrid scoring.
+        """	
+        data = self.with_hybrid(query, lang=lang, top_n=top_n)
         return pd.DataFrame.from_dict(data, orient='columns')
     
     def rerank(self, query, responses, top_n=10) -> dict:
