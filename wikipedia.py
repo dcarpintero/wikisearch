@@ -3,7 +3,6 @@ import os
 
 from dotenv import load_dotenv
 import cohere
-import pandas as pd
 import weaviate
 
 
@@ -26,7 +25,7 @@ class SearchEngine:
 
     def with_bm25(self, query, lang='en', top_n=10) -> list:
         """
-        Performs a keyword search on Wikipedia Articles using embeddings stored in Weaviate.
+        Performs a keyword search (sparse retrieval) on Wikipedia Articles using embeddings stored in Weaviate.
 
         Parameters:
         - query (str): The search query.
@@ -50,25 +49,10 @@ class SearchEngine:
             .do()
         )
         return response["data"]["Get"]["Articles"]
-
-    def with_bm25_as_df(self, query, lang='en', top_n=10) -> pd.DataFrame:
-        """
-        Performs a keyword search on Wikipedia Articles using embeddings stored in Weaviate.
-
-        Parameters:
-        - query (str): The search query.
-        - lang (str, optional): The language of the articles. Default is 'en'.
-        - top_n (int, optional): The number of top results to return. Default is 10.
-
-        Returns:
-        - pandas.DataFrame: DataFrame of top articles based on BM25F scoring.
-        """
-        data = self.by_keyword(query, lang=lang, top_n=top_n)
-        return pd.DataFrame.from_dict(data, orient='columns')
         
     def with_neartext(self, query, lang='en', top_n=10) -> list:
         """
-        Performs a semantic search on Wikipedia Articles using embeddings stored in Weaviate.
+        Performs a semantic search (dense retrieval) on Wikipedia Articles using embeddings stored in Weaviate.
 
         Parameters:
         - query (str): The search query.
@@ -96,21 +80,6 @@ class SearchEngine:
         )
         return response['data']['Get']['Articles']
     
-    def with_neartext_as_df(self, query, lang='en', top_n=10) -> pd.DataFrame:
-        """
-        Performs a semantic search on Wikipedia Articles using embeddings stored in Weaviate.
-
-        Parameters:
-        - query (str): The search query.
-        - lang (str, optional): The language of the articles. Default is 'en'.
-        - top_n (int, optional): The number of top results to return. Default is 10.
-
-        Returns:
-        - list: List of top articles based on semantic similarity.
-        """
-        data = self.with_neartext(query, lang=lang, top_n=top_n)
-        return pd.DataFrame.from_dict(data, orient='columns')
-    
     def with_hybrid(self, query, lang='en', top_n=10) -> list:
         """
         Performs a hybrid search on Wikipedia Articles using embeddings stored in Weaviate.
@@ -137,35 +106,38 @@ class SearchEngine:
         )
         return response["data"]["Get"]["Articles"]
     
-    def with_hybrid_as_df(self, query, lang='en', top_n=10) -> pd.DataFrame:
-        """
-        Performs a hybrid search on Wikipedia Articles using embeddings stored in Weaviate.
-
-        Parameters:
-        - query (str): The search query.
-        - lang (str, optional): The language of the articles. Default is 'en'.
-        - top_n (int, optional): The number of top results to return. Default is 10.
-
-        Returns:
-        - pandas.DataFrame: DataFrame of top articles based on hybrid scoring.
-        """	
-        data = self.with_hybrid(query, lang=lang, top_n=top_n)
-        return pd.DataFrame.from_dict(data, orient='columns')
-    
-    def rerank(self, query, responses, top_n=10) -> dict:
+    def with_llm(self, context, query):
+        prompt = f"""
+            Use the information provided below to answer the questions at the end. /
+            Generate the answer in the language of the context. /
+            If the answer to the question is not contained in the provided information, say "The answer is not in the context".
+            ---
+            Context information:
+            {context}
+            ---
+            Question: 
+            {query}
+            """
+        return self.cohere.generate(
+            prompt=prompt,
+            num_generations=1,
+            max_tokens=1000,
+            )
+        
+    def rerank(self, query, documents, top_n=10) -> dict:
         """
         Reranks a list of responses using Cohere's reranking API.
 
         Parameters:
         - query (str): The search query.
-        - responses (list): List of responses to be reranked.
+        - documents (list): List of documents to be reranked.
         - top_n (int, optional): The number of top reranked results to return. Default is 10.
 
         Returns:
-        - dict: Reranked responses from Cohere's API.
+        - dict: Reranked documents from Cohere's API.
         """
-        return self.cohere.rerank(model='rerank-english-v2.0', query=query, documents=responses, top_n=top_n)
-
+        return self.cohere.rerank(query=query, documents=documents, top_n=top_n, model='rerank-english-v2.0')
+    
     def __load_environment_vars(self):
         """
         Load environment variables from .env file
