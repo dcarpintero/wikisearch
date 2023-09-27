@@ -1,97 +1,130 @@
-from dotenv import load_dotenv
-import cohere
 import logging
 import os
+
+from dotenv import load_dotenv
+import cohere
+import pandas as pd
 import weaviate
 
 
 class SearchEngine:
     """
-    Class to perform keyword search, semantic search, and reranking
+    A Search Engine utility that performs keyword and semantic searches using Weaviate, and 
+    reranks responses using Cohere.
     """
+    WIKIPEDIA_PROPERTIES = ["text", "title", "url", "views", "lang", "_additional {distance}"]
+
     def __init__(self):
         logging.basicConfig(level=logging.INFO,
-                        format="%(asctime)s [%(levelname)s] %(message)s")
+                            format="%(asctime)s [%(levelname)s] %(message)s")
         self.vars = self.__load_environment_vars()
-
         self.cohere = self.__cohere_client(self.vars["COHERE_API_KEY"])
-        self.weaviate = self.__weaviate_client(
-            self.vars["WEAVIATE_API_KEY"],
-            self.vars["COHERE_API_KEY"],
-            self.vars["WEAVIATE_URL"],
-        )
-        
-    def by_keyword(self, query, lang='en', top_n=10):
-        """
-        Query the Weaviate database and return the top results.
-        """	
-        properties = ["text", "title", "url", "views", "lang", "_additional {distance}"]
+        self.weaviate = self.__weaviate_client(self.vars["WEAVIATE_API_KEY"], 
+                                               self.vars["COHERE_API_KEY"], 
+                                               self.vars["WEAVIATE_URL"])
+        logging.info("Initialized SearchEngine with Cohere and Weaviate clients")
 
+    def with_bm25(self, query, lang='en', top_n=10) -> list:
+        """
+        Performs a keyword search on Wikipedia Articles using embeddings stored in Weaviate.
+
+        Parameters:
+        - query (str): The search query.
+        - lang (str, optional): The language of the articles. Default is 'en'.
+        - top_n (int, optional): The number of top results to return. Default is 10.
+
+        Returns:
+        - list: List of top articles based on BM25F scoring.
+        """
+        logging.info("with_bm25()")
         where_filter = {
             "path": ["lang"],
             "operator": "Equal",
             "valueString": lang
         }
-
         response = (
-            self.weaviate.query.get("Articles", properties)
-                .with_bm25(
-                    query=query
-                )
-                .with_where(where_filter)
-                .with_limit(top_n)
-                .do()
+            self.weaviate.query.get("Articles", self.WIKIPEDIA_PROPERTIES)
+            .with_bm25(query=query)
+            .with_where(where_filter)
+            .with_limit(top_n)
+            .do()
         )
-        result = response['data']['Get']['Articles']
-        return result
+        return response["data"]["Get"]["Articles"]
 
-    def dense_retrieval(self, query, results_lang='en', top_n=10):
+    def with_bm25_as_df(self, query, lang='en', top_n=10) -> pd.DataFrame:
         """
-        Query the vectors database and return the top results.
+        Performs a keyword search on Wikipedia Articles using embeddings stored in Weaviate.
 
+        Parameters:
+        - query (str): The search query.
+        - lang (str, optional): The language of the articles. Default is 'en'.
+        - top_n (int, optional): The number of top results to return. Default is 10.
 
-        Parameters
-        ----------
-            query: str
-                The search query
-
-            results_lang: str (optional)
-                Retrieve results only in the specified language.
-                The demo dataset has those languages:
-                en, de, fr, es, it, ja, ar, zh, ko, hi
-
+        Returns:
+        - pandas.DataFrame: DataFrame of top articles based on BM25F scoring.
         """
+        data = self.by_keyword(query, lang=lang, top_n=top_n)
+        return pd.DataFrame.from_dict(data, orient='columns')
+        
+    def with_neartext(self, query, lang='en', top_n=10) -> list:
+        """
+        Performs a semantic search on Wikipedia Articles using embeddings stored in Weaviate.
 
-        nearText = {"concepts": [query]}
-        properties = ["text", "title", "url", "views", "lang", "_additional {distance}"]
-        # To filter by language
+        Parameters:
+        - query (str): The search query.
+        - lang (str, optional): The language of the articles. Default is 'en'.
+        - top_n (int, optional): The number of top results to return. Default is 10.
+
+        Returns:
+        - list: List of top articles based on semantic similarity.
+        """
+        logging.info("with_neartext()")
+        nearText = {
+            "concepts": [query]
+        }
         where_filter = {
-        "path": ["lang"],
-        "operator": "Equal",
-        "valueString": results_lang
+            "path": ["lang"],
+            "operator": "Equal",
+            "valueString": lang
         }
         response = (
-            self.weaviate.query
-                .get("Articles", properties)
-                .with_near_text(nearText)
-                .with_where(where_filter)
-                .with_limit(top_n)
-                .do()
+            self.weaviate.query.get("Articles", self.WIKIPEDIA_PROPERTIES)
+            .with_near_text(nearText)
+            .with_where(where_filter)
+            .with_limit(top_n)
+            .do()
         )
-
-        result = response['data']['Get']['Articles']
-
-        return result
+        return response['data']['Get']['Articles']
     
-    def rerank_responses(self, query, responses, top_n=10):
-        reranked_responses = self.cohere.rerank(
-            model = 'rerank-english-v2.0',
-            query = query,
-            documents = responses,
-            top_n = top_n,
-        )
-        return reranked_responses
+    def with_neartext_as_df(self, query, lang='en', top_n=10) -> pd.DataFrame:
+        """
+        Performs a semantic search on Wikipedia Articles using embeddings stored in Weaviate.
+
+        Parameters:
+        - query (str): The search query.
+        - lang (str, optional): The language of the articles. Default is 'en'.
+        - top_n (int, optional): The number of top results to return. Default is 10.
+
+        Returns:
+        - list: List of top articles based on semantic similarity.
+        """
+        data = self.with_neartext(query, lang=lang, top_n=top_n)
+        return pd.DataFrame.from_dict(data, orient='columns')
     
+    def rerank(self, query, responses, top_n=10) -> dict:
+        """
+        Reranks a list of responses using Cohere's reranking API.
+
+        Parameters:
+        - query (str): The search query.
+        - responses (list): List of responses to be reranked.
+        - top_n (int, optional): The number of top reranked results to return. Default is 10.
+
+        Returns:
+        - dict: Reranked responses from Cohere's API.
+        """
+        return self.cohere.rerank(model='rerank-english-v2.0', query=query, documents=responses, top_n=top_n)
+
     def __load_environment_vars(self):
         """
         Load environment variables from .env file
@@ -99,29 +132,21 @@ class SearchEngine:
         logging.info("Loading environment variables...")
 
         load_dotenv()
+        required_vars = ["COHERE_API_KEY", "WEAVIATE_API_KEY", "WEAVIATE_URL"]
+        env_vars = {var: os.getenv(var) for var in required_vars}
+        for var, value in env_vars.items():
+            if not value:
+                raise EnvironmentError(f"{var} environment variable not set.")
+        
+        logging.info("Environment variables loaded")
+        return env_vars
 
-        cohere_api_key = os.getenv("COHERE_API_KEY")
-        weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
-        weaviate_url = os.getenv("WEAVIATE_URL")
-
-        if not cohere_api_key:
-            raise EnvironmentError("COHERE_API_KEY environment variable not set.")
-        
-        if not weaviate_api_key:
-            raise EnvironmentError("WEAVIATE_API_KEY environment variable not set.")
-        
-        if not weaviate_url:
-            raise EnvironmentError("WEAVIATE_URL environment variable not set.")
-        
-        logging.info("Environment variables loaded.")
-        return {"COHERE_API_KEY": cohere_api_key, "WEAVIATE_API_KEY": weaviate_api_key, "WEAVIATE_URL": weaviate_url}
-        
     def __cohere_client(self, cohere_api_key):
         """
         Initialize Cohere client
         """
         return cohere.Client(cohere_api_key)
-    
+
     def __weaviate_client(self, weaviate_api_key, cohere_api_key, cohere_url):
         """
         Initialize Weaviate client
