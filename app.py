@@ -60,10 +60,10 @@ languages = {
 }
 
 with st.sidebar.expander("🤖 COHERE-SETTINGS", expanded=True):
-    lang = st.selectbox("Language:", list(languages.keys()), index=2)
+    lang = st.selectbox("Language", list(languages.keys()), index=2)
     lang_code = languages.get(lang)
-    gen_model = st.selectbox("Generation Model:", ["command", "command-light", "command-nightly"], key="gen-model", index=0)
-    rank_model = st.selectbox("Rank Model:", ["rerank-english-v2.0", "rerank-multilingual-v2.0"], key="rank-model", index=0)
+    gen_model = st.selectbox("Generation Model", ["command", "command-light", "command-nightly"], key="gen-model", index=0)
+    rank_model = st.selectbox("Rank Model", ["rerank-english-v2.0", "rerank-multilingual-v2.0"], key="rank-model", index=0)
     temperature = st.slider('Temperature', min_value=0.0, max_value=1.0, value=0.25, step=0.05)
     max_results = st.slider('Max Results', min_value=0,
                             max_value=15, value=7, step=1)
