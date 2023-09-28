@@ -77,10 +77,10 @@ with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
 
 with st.expander(" ABOUT-THIS-APP", expanded=True):
     st.write("""
-             - This Retrieval Augmented Generation App (RAG) uses the Weaviate database containing 10M Wikipedia embedding vectors.
-             - Step 1: Pre-Search on Weaviate with Sparse Retrival (bm25), Dense Retrieval (neartext), or Hybrid Mode (bm25 + neartext).
-             - Step 2: Cohere Rank Model re-organizes the Pre-Search by assigning a relevance score to each Pre-Search result given the query.
-             - Step 3: Cohere's Generation Model composes a response to the query based on the ranked results.
+             - This Retrieval Augmented Generation App (RAG) uses the *Weaviate* database containing 10M Wikipedia embedding vectors.
+             - Step 1: Pre-Search on *Weaviate* with Sparse Retrival (bm25), Dense Retrieval (neartext), or Hybrid Mode (bm25 + neartext).
+             - Step 2: *Cohere Rank Model* re-organizes the Pre-Search by assigning a relevance score to each Pre-Search result given the query.
+             - Step 3: *Cohere Generation Model* composes a response based on the ranked results.
              - Try your language and experiment with the settings!
              """)
     
@@ -124,7 +124,7 @@ if query:
         st.write(r)
         
         with st.expander("📚 WIKIPEDIA-REFERENCES", expanded=True):
-            st.info("Some references might appear duplicated but refer to different paragraphs of the same article.")
+            st.info("Some references might appear duplicated while referring to different paragraphs of the same article.")
             for r in data_ranked:
                 doc = r.document
                 st.markdown(f'[{doc["title"]}]({doc["url"]}) [Score:{r.relevance_score:.3f}]')
