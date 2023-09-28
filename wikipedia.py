@@ -109,6 +109,7 @@ class SearchEngine:
     def with_llm(self, context, query):
         prompt = f"""
             Use the information provided below to answer the questions at the end. /
+            Include in the answer some curious or relevant fact extracted from the context, and related to the question. /
             Generate the answer in the language of the context. /
             If the answer to the question is not contained in the provided information, say "The answer is not in the context".
             ---
