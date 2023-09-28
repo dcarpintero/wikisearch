@@ -7,7 +7,7 @@ import wikipedia
 
 st.set_page_config(
     page_title="Wikipedia Semantic Engine",
-    page_icon="🦙",
+    page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={"About": "Built by @dcarpintero with Streamlit, Cohere and Weaviate"},
@@ -27,8 +27,8 @@ def query_neartext(query, lang='en', top_n=10):
 def query_hybrid(query, lang='en', top_n=10):
    return wikisearch.with_hybrid(query, lang=lang, top_n=top_n)
 
-def query_with_llm(context, query):
-   response = wikisearch.with_llm(context=context, query=query)
+def query_with_llm(context, query, temperature, model):
+   response = wikisearch.with_llm(context=context, query=query, temperature=temperature, model=model)
    return response.generations[0].text
 
 def onchange_with_near_text():
@@ -59,12 +59,14 @@ languages = {
     'Spanish': 'es'
 }
 
-with st.sidebar.expander(" WIKIPEDIA-SETTINGS", expanded=True):
-    lang = st.selectbox("language", list(languages.keys()), index=2, label_visibility="hidden")
+with st.sidebar.expander("🤖 COHERE-SETTINGS", expanded=True):
+    lang = st.selectbox("Language:", list(languages.keys()), index=2)
     lang_code = languages.get(lang)
-    st.write(f"Selected language: {lang_code}")
+    gen_model = st.selectbox("Generation Model:", ["command", "command-light", "command-nightly"], key="gen-model", index=0)
+    rank_model = st.selectbox("Rank Model:", ["rerank-english-v2.0", "rerank-multilingual-v2.0"], key="rank-model", index=0)
+    temperature = st.slider('Temperature', min_value=0.0, max_value=1.0, value=0.25, step=0.05)
     max_results = st.slider('Max Results', min_value=0,
-                            max_value=100, value=10, step=1)
+                            max_value=15, value=7, step=1)
 
 with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
     st.toggle('Near Text Search', key="with_near_text",
@@ -73,6 +75,15 @@ with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
     st.toggle('Hybrid Search',  key="with_hybrid",
               on_change=onchange_with_hybrid)
 
+with st.expander(" ABOUT-THIS-APP", expanded=True):
+    st.write("""
+             - This Retrieval Augmented Generation App (RAG) uses the Weaviate database containing 10M Wikipedia embedding vectors.
+             - Step 1: Pre-Search on Weaviate with Sparse Retrival (bm25), Dense Retrieval (neartext), or Hybrid Mode (bm25 + neartext).
+             - Step 2: Cohere Rank Model re-organizes the Pre-Search by assigning a relevance score to each Pre-Search result given the query.
+             - Step 3: Cohere's Generation Model composes a response to the query based on the ranked results.
+             - Try your language and experiment with the settings!
+             """)
+    
 query = st.text_input("Ask 'Wikipedia'", '')
 
 if query:
@@ -89,33 +100,33 @@ if query:
     col1, col2, col3 = st.columns([1,1,1])
 
     with col1:
-        st.subheader("Step 1: Search Results")
+        st.subheader("🔎 Pre-Search")
 
         for doc in data:
             st.markdown(f'[{doc["title"]}]({doc["url"]}) "{doc["text"][:1000]}"')
             st.divider()
 
     with col2:
-        st.subheader("Step 2: Ranked Results")
+        st.subheader("🏆 Ranking")
 
-        data_ranked = wikisearch.rerank(query=query, documents=data)
+        data_ranked = wikisearch.rerank(query=query, documents=data, top_n=max_results, model=rank_model)
         for idx, r in enumerate(data_ranked):
             doc = r.document
-            st.write(f"[Document Rank: {idx+1}, Document Index: {r.index + 1}, Relevance Score: {r.relevance_score:.2f}]")
+            st.write(f"[Document Rank: {idx+1}, Document Index: {r.index + 1}, Relevance Score: {r.relevance_score:.3f}]")
             st.markdown(f'[{doc["title"]}]({doc["url"]}) "{doc["text"][:1000]}"')
             st.divider()
 
     with col3:
-        st.subheader("Step 3: LLM Answer")
+        st.subheader("📝 Generation")
 
-        with st.spinner("Querying LLM..."):
-            r = query_with_llm(context=data_ranked, query=query)
+        with st.spinner("Deep Diving..."):
+            r = query_with_llm(context=data_ranked, query=query, temperature=temperature, model=gen_model)
         st.write(r)
-        st.divider()
         
-        st.write("Wikipedia References:")
-        for r in data_ranked:
-            doc = r.document
-            st.markdown(f'[{doc["title"]}]({doc["url"]}) [Score:{r.relevance_score}]')
+        with st.expander("📚 WIKIPEDIA-REFERENCES", expanded=True):
+            st.info("Some references might appear duplicated but refer to different paragraphs of the same article.")
+            for r in data_ranked:
+                doc = r.document
+                st.markdown(f'[{doc["title"]}]({doc["url"]}) [Score:{r.relevance_score:.3f}]')
             
 
