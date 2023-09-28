@@ -106,11 +106,10 @@ class SearchEngine:
         )
         return response["data"]["Get"]["Articles"]
     
-    def with_llm(self, context, query):
+    def with_llm(self, context, query, temperature=0.2, model="command") -> list:
         prompt = f"""
             Use the information provided below to answer the questions at the end. /
             Include in the answer some curious or relevant fact extracted from the context, and related to the question. /
-            Format the answer in bullet points. /
             Generate the answer in the language of the context. /
             If the answer to the question is not contained in the provided information, say "The answer is not in the context".
             ---
@@ -124,9 +123,11 @@ class SearchEngine:
             prompt=prompt,
             num_generations=1,
             max_tokens=1000,
+            temperature=temperature,
+            model=model,
             )
         
-    def rerank(self, query, documents, top_n=10) -> dict:
+    def rerank(self, query, documents, top_n=10, model='rerank-english-v2.0') -> dict:
         """
         Reranks a list of responses using Cohere's reranking API.
 
@@ -134,11 +135,12 @@ class SearchEngine:
         - query (str): The search query.
         - documents (list): List of documents to be reranked.
         - top_n (int, optional): The number of top reranked results to return. Default is 10.
+        - model: The model to use for reranking. Default is 'rerank-english-v2.0'.
 
         Returns:
         - dict: Reranked documents from Cohere's API.
         """
-        return self.cohere.rerank(query=query, documents=documents, top_n=top_n, model='rerank-english-v2.0')
+        return self.cohere.rerank(query=query, documents=documents, top_n=top_n, model=model)
     
     def __load_environment_vars(self):
         """
