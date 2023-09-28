@@ -99,9 +99,10 @@ if query:
         st.subheader("Step 2: Ranked Results")
 
         data_ranked = wikisearch.rerank(query=query, documents=data)
-        for r in data_ranked:
+        for idx, r in enumerate(data_ranked):
             doc = r.document
-            st.markdown(f'[{doc["title"]}]({doc["url"]}) "{doc["text"][:1000]}" [Score:{r.relevance_score}]')
+            st.write(f"[Document Rank: {idx+1}, Document Index: {r.index + 1}, Relevance Score: {r.relevance_score:.2f}]")
+            st.markdown(f'[{doc["title"]}]({doc["url"]}) "{doc["text"][:1000]}"')
             st.divider()
 
     with col3:
@@ -112,7 +113,7 @@ if query:
         st.write(r)
         st.divider()
         
-        st.write("Wikipedia sources:")
+        st.write("Wikipedia References:")
         for r in data_ranked:
             doc = r.document
             st.markdown(f'[{doc["title"]}]({doc["url"]}) [Score:{r.relevance_score}]')
