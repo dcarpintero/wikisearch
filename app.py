@@ -118,7 +118,7 @@ def onclick_sample_query(query):
 # -----------------------------------------------------------------------------
 # Ask Wikipedia Section
 # -----------------------------------------------------------------------------
-st.subheader("Wikipedia Semantic Search")
+st.subheader("Wikipedia Semantic Search with Cohere Reranking")
 query = st.text_input(label="Ask 'Wikipedia'", placeholder='Ask your question here, or select one from the examples below',  key="user_query_txt", label_visibility="hidden")
 
 btn_printing = st.session_state.get("btn_printing", False)
