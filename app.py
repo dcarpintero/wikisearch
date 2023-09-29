@@ -1,12 +1,20 @@
 """
-This is a Streamlit app that uses the Cohere Semantic Search API to search Wikipedia.
-It uses the Weaviate database containing 10M Wikipedia embedding vectors.
+Multilingual Retrieval Augmented Generation demo built with Cohere, Weaviate and Streamlit.
+It implements Semantic Search on Wikipedia Articles using 10 million vector embeddings.
+
+This demo illustrates a three step approach (Pre-Search, Rank, Generation):
+- Step 1: Pre-Search on Weaviate with Sparse Retrival (bm25), Dense Retrieval (neartext), or Hybrid Mode (bm25 + neartext).
+- Step 2: Cohere Rank Model re-organizes the Pre-Search by assigning a relevance score to each Pre-Search result given the query.
+- Step 3: Cohere Generation Model composes a response based on the ranked results.
+
+Author:
+    @dcarpintero : https://github.com/dcarpintero
 """
 import streamlit as st
 import wikipedia
 
 st.set_page_config(
-    page_title="Wikipedia Semantic Engine",
+    page_title="Wikipedia Semantic Search",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded",
