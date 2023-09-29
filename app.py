@@ -114,19 +114,19 @@ with st.expander("ℹ️ ABOUT-THIS-APP", expanded=False):
              """)
     
 with st.sidebar:
-    col_gh, col_we, col_llms = st.columns([1,1,1])
+    col_gh, col_co, col_we = st.columns([1,1,1])
     with col_gh:
         "[![Github](https://img.shields.io/badge/Github%20Repo-gray?logo=Github)](https://github.com/dcarpintero/wise)"
+    with col_co:
+        "[![Cohere](https://img.shields.io/badge/Cohere%20LLMs-purple)](https://cohere.com/?ref=https://github.com/dcarpintero)"
     with col_we:
-        "[![LLMs for Search](https://img.shields.io/badge/LLMs%20for%20Search-purple)](https://txt.cohere.com/using-llms-for-search/)"
-    with col_llms:
-        "[![Weaviate](https://img.shields.io/badge/Weaviate-green)](https://weaviate.io/)"
+        "[![Weaviate](https://img.shields.io/badge/Weaviate-green)](https://weaviate.io/?ref=https://github.com/dcarpintero)"
         
     
 # -----------------------------------------------------------------------------
 # Ask Wikipedia Section
 # -----------------------------------------------------------------------------
-st.subheader("Wikipedia Semantic Search with Cohere Reranking")
+st.subheader("🪄 Wikipedia Semantic Search with Cohere Rerank")
 query = st.text_input(label="Ask 'Wikipedia'", placeholder='Ask your question here, or select one from the examples below',  key="user_query_txt", label_visibility="hidden")
 
 btn_printing = st.session_state.get("btn_printing", False)
@@ -135,7 +135,6 @@ btn_internet = st.session_state.get("btn_internet", False)
 btn_ai = st.session_state.get("btn_ai", False)
 
 col1, col2, col3, col4 = st.columns([1,1,1,1])
-
 with col1:
     if st.button(label=samples["q1"], type="primary", disabled=btn_printing, on_click=onclick_sample_query, args=[samples["q1"]]):
         st.session_state.btn_printing = True
@@ -164,31 +163,31 @@ if query:
     col1, col2, col3 = st.columns([1,1,1])
 
     with col1:
-        st.subheader("🔎 Pre-Search")
+        st.subheader("🔎 1. Pre-Search")
 
         for doc in data:
             st.markdown(f'[{doc["title"]}]({doc["url"]}) "{doc["text"][:1000]}"')
             st.divider()
 
     with col2:
-        st.subheader("🏆 Ranking")
+        st.subheader("🏆 2. Ranking")
 
         data_ranked = wikisearch.rerank(query=query, documents=data, top_n=max_results, model=rank_model)
         for idx, r in enumerate(data_ranked):
             doc = r.document
-            st.write(f"[Document Rank: {idx+1}, Document Index: {r.index + 1}, Relevance Score: {r.relevance_score:.3f}]")
+            st.write(f"[**Document Rank: {idx+1} - Previous Rank: {r.index + 1} - Relevance Score: {r.relevance_score:.3f}**]")
             st.markdown(f'[{doc["title"]}]({doc["url"]}) "{doc["text"][:1000]}"')
             st.divider()
 
     with col3:
-        st.subheader("📝 LLM Generation")
+        st.subheader("📝 3. LLM Generation")
 
         with st.spinner("Deep Diving..."):
             r = query_llm(context=data_ranked, query=query, temperature=temperature, model=gen_model, lang=lang)
-        st.success(r)
+        st.success(f"🪄 {r}")
         
         with st.expander("📚 WIKIPEDIA-REFERENCES", expanded=True):
-            st.info("Some references might appear to be duplicated while referring to different paragraphs of the same article.")
+            st.info("ℹ️ Some references might appear to be duplicated while referring to different paragraphs of the same article.")
             for r in data_ranked:
                 doc = r.document
                 st.markdown(f'[{doc["title"]}]({doc["url"]}) [Score:{r.relevance_score:.3f}]')
