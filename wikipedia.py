@@ -106,12 +106,12 @@ class SearchEngine:
         )
         return response["data"]["Get"]["Articles"]
     
-    def with_llm(self, context, query, temperature=0.2, model="command") -> list:
+    def with_llm(self, context, query, temperature=0.2, model="command", lang="english") -> list:
         prompt = f"""
             Use the information provided below to answer the questions at the end. /
-            Include in the answer some curious or relevant fact extracted from the context, and related to the question. /
-            Generate the answer in the language of the context. /
-            If the answer to the question is not contained in the provided information, say "The answer is not in the context".
+            Include some curious or relevant facts extracted from the context. /
+            Generate the answer in the language of the query. If you cannot determine the language of the query use {lang}. /
+            If the answer to the question is not contained in the provided information, generate "The answer is not in the context".
             ---
             Context information:
             {context}
@@ -161,12 +161,26 @@ class SearchEngine:
     def __cohere_client(self, cohere_api_key):
         """
         Initialize Cohere client
+
+        Parameters:
+        - cohere_api_key (str): Cohere API key
+
+        Returns:
+        - cohere.Client: Cohere client
         """
         return cohere.Client(cohere_api_key)
 
     def __weaviate_client(self, weaviate_api_key, cohere_api_key, cohere_url):
         """
         Initialize Weaviate client
+
+        Parameters:
+        - weaviate_api_key (str): Weaviate API key
+        - cohere_api_key (str): Cohere API key
+        - cohere_url (str): Cohere URL
+
+        Returns:
+        - weaviate.Client: Weaviate client
         """
         auth_config = weaviate.auth.AuthApiKey(api_key=weaviate_api_key)
         return weaviate.Client(
