@@ -59,6 +59,11 @@ def onchange_with_hybrid():
         st.session_state.with_near_text = False
         st.session_state.with_bm25 = False
 
+def onclick_sample_query(query):
+    st.write("onclick_sample_query: " + query)
+    st.session_state.user_query_txt = query
+
+
 languages = {
     'Arabic': 'ar',
     'Chinese': 'zh',
@@ -109,12 +114,15 @@ with st.expander("ℹ️ ABOUT-THIS-APP", expanded=False):
              """)
     
 with st.sidebar:
-    "[![LLMs for Search](https://img.shields.io/badge/LLMs%20for%20Search-gray)](https://txt.cohere.com/using-llms-for-search/)"
+    col_gh, col_we, col_llms = st.columns([1,1,1])
+    with col_gh:
+        "[![Github](https://img.shields.io/badge/Github%20Repo-gray?logo=Github)](https://github.com/dcarpintero/wise)"
+    with col_we:
+        "[![LLMs for Search](https://img.shields.io/badge/LLMs%20for%20Search-purple)](https://txt.cohere.com/using-llms-for-search/)"
+    with col_llms:
+        "[![Weaviate](https://img.shields.io/badge/Weaviate-green)](https://weaviate.io/)"
+        
     
-def onclick_sample_query(query):
-    st.write("onclick_sample_query: " + query)
-    st.session_state.user_query_txt = query
-
 # -----------------------------------------------------------------------------
 # Ask Wikipedia Section
 # -----------------------------------------------------------------------------
