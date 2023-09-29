@@ -92,9 +92,9 @@ with st.sidebar.expander("🤖 COHERE-SETTINGS", expanded=True):
     lang_code = languages.get(lang)
     gen_model = st.selectbox("Generation Model", ["command", "command-light", "command-nightly"], key="gen-model", index=0)
     rank_model = st.selectbox("Rank Model", ["rerank-multilingual-v2.0", "rerank-english-v2.0"], key="rank-model", index=0)
-    temperature = st.slider('Temperature', min_value=0.0, max_value=1.0, value=0.25, step=0.05)
+    temperature = st.slider('Temperature', min_value=0.0, max_value=1.0, value=0.30, step=0.05)
     max_results = st.slider('Max Results', min_value=0,
-                            max_value=15, value=5, step=1)
+                            max_value=15, value=10, step=1)
 
 with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
     st.toggle('Dense Retrieval', key="with_near_text",
@@ -183,7 +183,7 @@ if query:
         st.subheader("📝 3. LLM Generation")
 
         with st.spinner("Deep Diving..."):
-            r = query_llm(context=data_ranked, query=query, temperature=temperature, model=gen_model, lang=lang)
+            r = query_llm(context=data_ranked[:5], query=query, temperature=temperature, model=gen_model, lang=lang)
         st.success(f"🪄 {r}")
         
         with st.expander("📚 WIKIPEDIA-REFERENCES", expanded=True):
