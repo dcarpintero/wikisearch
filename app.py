@@ -1,6 +1,6 @@
 """
-It connects to the Weaviate demo databse containing 10M wikipedia vectors
-Wikipedia articles get chunked by paragraph, and each chunk gets assigned an embedding vector
+This is a Streamlit app that uses the Cohere Semantic Search API to search Wikipedia.
+It uses the Weaviate database containing 10M Wikipedia embedding vectors.
 """
 import streamlit as st
 import wikipedia
@@ -13,7 +13,11 @@ st.set_page_config(
     menu_items={"About": "Built by @dcarpintero with Streamlit, Cohere and Weaviate"},
 )
 
-wikisearch = wikipedia.SearchEngine()
+@st.cache_resource(show_spinner=False)
+def load_semantic_engine():
+    return wikipedia.SearchEngine()
+
+wikisearch = load_semantic_engine()
 
 @st.cache_data
 def query_bm25(query, lang='en', top_n=10):
@@ -27,9 +31,10 @@ def query_neartext(query, lang='en', top_n=10):
 def query_hybrid(query, lang='en', top_n=10):
    return wikisearch.with_hybrid(query, lang=lang, top_n=top_n)
 
-def query_with_llm(context, query, temperature, model):
-   response = wikisearch.with_llm(context=context, query=query, temperature=temperature, model=model)
-   return response.generations[0].text
+def query_llm(context, query, temperature, model, lang="english"):
+   response = wikisearch.with_llm(context=context, query=query, temperature=temperature, model=model, lang=lang)
+   text = response.generations[0].text
+   return text
 
 def onchange_with_near_text():
     if st.session_state.with_near_text:
@@ -59,14 +64,24 @@ languages = {
     'Spanish': 'es'
 }
 
+samples = {
+    'q1': 'Who invented the printing press, what was the key development for this?',
+    'q2': 'What are the top 3 highest mountains in the world?', 
+    'q3': 'Who was the first person to win two Nobel prizes?',
+    'q4': 'When and in which year were celebrated the first olimpic games?',
+}
+
+# -----------------------------------------------------------------------------
+# Sidebar Section
+# -----------------------------------------------------------------------------
 with st.sidebar.expander("🤖 COHERE-SETTINGS", expanded=True):
     lang = st.selectbox("Language", list(languages.keys()), index=2)
     lang_code = languages.get(lang)
     gen_model = st.selectbox("Generation Model", ["command", "command-light", "command-nightly"], key="gen-model", index=0)
-    rank_model = st.selectbox("Rank Model", ["rerank-english-v2.0", "rerank-multilingual-v2.0"], key="rank-model", index=0)
+    rank_model = st.selectbox("Rank Model", ["rerank-multilingual-v2.0", "rerank-english-v2.0"], key="rank-model", index=0)
     temperature = st.slider('Temperature', min_value=0.0, max_value=1.0, value=0.25, step=0.05)
     max_results = st.slider('Max Results', min_value=0,
-                            max_value=15, value=7, step=1)
+                            max_value=15, value=5, step=1)
 
 with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
     st.toggle('Near Text Search', key="with_near_text",
@@ -75,16 +90,43 @@ with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
     st.toggle('Hybrid Search',  key="with_hybrid",
               on_change=onchange_with_hybrid)
 
-with st.expander(" ABOUT-THIS-APP", expanded=True):
+with st.expander("ℹ️ ABOUT-THIS-APP", expanded=False):
     st.write("""
-             - This Retrieval Augmented Generation App (RAG) uses the *Weaviate* database containing 10M Wikipedia embedding vectors.
+             - Multilingual RAG built with *Cohere* and the *Weaviate* demo database containing 10M Wikipedia embedding vectors (October 9th, 2021).
              - Step 1: Pre-Search on *Weaviate* with Sparse Retrival (bm25), Dense Retrieval (neartext), or Hybrid Mode (bm25 + neartext).
              - Step 2: *Cohere Rank Model* re-organizes the Pre-Search by assigning a relevance score to each Pre-Search result given the query.
              - Step 3: *Cohere Generation Model* composes a response based on the ranked results.
-             - Try your language and experiment with the settings!
+             - Ask on your preferred language, and experiment with the settings!
              """)
     
-query = st.text_input("Ask 'Wikipedia'", '')
+def onclick_sample_query(query):
+    st.write("onclick_sample_query: " + query)
+    st.session_state.user_query_txt = query
+
+# -----------------------------------------------------------------------------
+# Ask Wikipedia Section
+# -----------------------------------------------------------------------------
+query = st.text_input(label="Ask 'Wikipedia'", placeholder='Ask your question here, or select one from the examples below',  key="user_query_txt")
+
+btn_printing = st.session_state.get("btn_printing", False)
+btn_nobel = st.session_state.get("btn_nobel", False)
+btn_internet = st.session_state.get("btn_internet", False)
+btn_ai = st.session_state.get("btn_ai", False)
+
+col1, col2, col3, col4 = st.columns([1,1,1,1])
+
+with col1:
+    if st.button(label=samples["q1"], type="primary", disabled=btn_printing, on_click=onclick_sample_query, args=[samples["q1"]]):
+        st.session_state.btn_printing = True
+with col2:
+    if st.button(label=samples["q2"], type="primary", disabled=btn_nobel,  on_click=onclick_sample_query, args=[samples["q2"]]):
+        st.session_state.btn_nobel = True
+with col3:
+    if st.button(label=samples["q3"], type="primary", disabled=btn_internet,  on_click=onclick_sample_query, args=[samples["q3"]]):
+        st.session_state.btn_internet = True
+with col4:
+    if st.button(label=samples["q4"], type="primary", disabled=btn_ai,  on_click=onclick_sample_query, args=[samples["q4"]]):
+        st.session_state.btn_ai = True
 
 if query:
     if st.session_state.with_near_text:
@@ -120,13 +162,11 @@ if query:
         st.subheader("📝 Generation")
 
         with st.spinner("Deep Diving..."):
-            r = query_with_llm(context=data_ranked, query=query, temperature=temperature, model=gen_model)
-        st.write(r)
+            r = query_llm(context=data_ranked, query=query, temperature=temperature, model=gen_model, lang=lang)
+        st.success(r)
         
         with st.expander("📚 WIKIPEDIA-REFERENCES", expanded=True):
             st.info("Some references might appear duplicated while referring to different paragraphs of the same article.")
             for r in data_ranked:
                 doc = r.document
                 st.markdown(f'[{doc["title"]}]({doc["url"]}) [Score:{r.relevance_score:.3f}]')
-            
-
