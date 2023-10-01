@@ -92,6 +92,7 @@ class SearchEngine:
         Returns:
         - list: List of top articles based on hybrid scoring.
         """	
+        logging.info("with_hybrid()")
         where_filter = {
             "path": ["lang"],
             "operator": "Equal",
