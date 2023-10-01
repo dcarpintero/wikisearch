@@ -165,9 +165,9 @@ if query:
     with col1:
         st.subheader("🔎 1. Pre-Search")
 
-        for doc in data:
-            st.markdown(f'[{doc["title"]}]({doc["url"]}) "{doc["text"][:1000]}"')
-            st.divider()
+        for idx, doc in enumerate(data):
+            with st.expander(f'**{doc["title"]} [Rank: {idx+1}**]', expanded=False):
+                st.markdown(f'"*{doc["text"][:800]} [...]*" [Source]({doc["url"]})')
 
     with col2:
         st.subheader("🏆 2. Ranking")
@@ -175,9 +175,11 @@ if query:
         data_ranked = wikisearch.rerank(query=query, documents=data, top_n=max_results, model=rank_model)
         for idx, r in enumerate(data_ranked):
             doc = r.document
-            st.write(f"[**Document Rank: {idx+1} - Previous Rank: {r.index + 1} - Relevance Score: {r.relevance_score:.3f}**]")
-            st.markdown(f'[{doc["title"]}]({doc["url"]}) "{doc["text"][:1000]}"')
-            st.divider()
+            expanded = False
+            if idx == 0:
+                expanded = True
+            with st.expander(f'**{doc["title"]} [Previous Rank: {r.index + 1} - Relevance: {r.relevance_score:.3f}**]', expanded=expanded):
+                st.markdown(f'"*{doc["text"][:800]} [...]*" [Source]({doc["url"]})')
 
     with col3:
         st.subheader("📝 3. LLM Generation")
@@ -185,9 +187,4 @@ if query:
         with st.spinner("Deep Diving..."):
             r = query_llm(context=data_ranked[:5], query=query, temperature=temperature, model=gen_model, lang=lang)
         st.success(f"🪄 {r}")
-        
-        with st.expander("📚 WIKIPEDIA-REFERENCES", expanded=True):
-            st.info("ℹ️ Some references might appear to be duplicated while referring to different paragraphs of the same article.")
-            for r in data_ranked:
-                doc = r.document
-                st.markdown(f'[{doc["title"]}]({doc["url"]}) [Score:{r.relevance_score:.3f}]')
+        st.info("ℹ️ Some references might appear to be duplicated while referring to different paragraphs of the same article.")
