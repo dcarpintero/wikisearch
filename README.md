@@ -9,7 +9,7 @@
   <img src="./static/wikisearch.png">
 </p>
 
-**Multilingual Semantic Search** on over 10 million Wikipedia documents vectorized in embeddings by [Weaviate](https://weaviate.io/blog/semantic-search-with-wikipedia-and-weaviate). This implementation is based on [Cohere´s blog ´Using LLMs for Search´](https://txt.cohere.com/using-llms-for-search/) and its corresponding [notebook](https://colab.research.google.com/github/cohere-ai/notebooks/blob/main/notebooks/End_To_End_Wikipedia_Search.ipynb). It enables to compare the performance of *keyword search*, *dense retrieval* and *hybrid search* to query the Wikipedia dataset. It further demonstrates the use of [Cohere Rerank](https://txt.cohere.com/rerank/) to improve the accuracy of results, and [Cohere Generate](https://txt.cohere.com/generative-ai-part-3/) to provide a reponse based on said ranked results. 
+Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia documents vectorized in embeddings by [Weaviate](https://weaviate.io/blog/semantic-search-with-wikipedia-and-weaviate). This implementation is based on [Cohere´s blog ´Using LLMs for Search´](https://txt.cohere.com/using-llms-for-search/) and its corresponding [notebook](https://colab.research.google.com/github/cohere-ai/notebooks/blob/main/notebooks/End_To_End_Wikipedia_Search.ipynb). It enables to compare the performance of *keyword search*, *dense retrieval* and *hybrid search* to query the Wikipedia dataset. It further demonstrates the use of [Cohere Rerank](https://txt.cohere.com/rerank/) to improve the accuracy of results, and [Cohere Generate](https://txt.cohere.com/generative-ai-part-3/) to provide a reponse based on said ranked results. 
 
 > *Semantic search refers to search algorithms that consider the intent and contextual meaning of search phrases when generating results, rather than solely focusing on keyword matching. It provides more accurate and relevant results by understanding the semantics, or meaning, behind the query.*
 
@@ -19,11 +19,9 @@
 
 # 📋 How does it work?
 
-- **Wikipedia Embeddings**: 
+- **Pre-Search**: Pre-Search on Wikipedia embeddings with *keyword matching*, *dense retrieval* or *hybrid search*:
 
-- **Pre-Search**: Pre-Search on Wikipedia embeddings with:
-
-- [Keyword Matching](https://weaviate.io/developers/weaviate/search/bm25/):
+[Keyword Matching](https://weaviate.io/developers/weaviate/search/bm25/): it looks for objects that contain the search terms in their properties. The results are scored according to the [BM25F function](https://en.wikipedia.org/wiki/Okapi_BM25):
 
 ```python
     def with_bm25(self, query, lang='en', top_n=10) -> list:
@@ -54,7 +52,7 @@
         return response["data"]["Get"]["Articles"]
 ```
 
-- [Dense Retrieval (Near-Text-Vector-Search)](https://weaviate.io/developers/weaviate/search/similarity):
+[Dense Retrieval](https://weaviate.io/developers/weaviate/search/similarity): find objects most similar to a raw (un-vectorized) text:
 
 ```python
     def with_neartext(self, query, lang='en', top_n=10) -> list:
@@ -89,7 +87,7 @@
 
 ```
 
-- [Hybrid Search](https://weaviate.io/developers/weaviate/search/hybrid/):
+[Hybrid Search](https://weaviate.io/developers/weaviate/search/hybrid/): produces results based on a weighted combination of results from a keyword (bm25) search and a vector search.
 
 ```python
     def with_hybrid(self, query, lang='en', top_n=10) -> list:
@@ -124,6 +122,7 @@
 
 <p align="center">
   <img src="https://txt.cohere.com/content/images/size/w1000/2023/04/data-src-image-3ce99123-fc91-4952-bc61-fcf36b810e18.png">
+  Source: Cohere
 </p>
 
 ```python
@@ -207,7 +206,7 @@ Demo Web App deployed to [Streamlit Cloud](https://streamlit.io/cloud/) and avai
 
 # References
 - [Cohere Rerank](https://txt.cohere.com/rerank/)
-- [Get Started with Streamlit Cloud](https://docs.streamlit.io/streamlit-community-cloud/get-started/)
+- [Streamlit Cloud](https://docs.streamlit.io/streamlit-community-cloud/get-started/)
 - [The Embedding Archives: Millions of Wikipedia Article Embeddings in Many Languages](https://txt.cohere.com/embedding-archives-wikipedia/)
 - [Using LLMs for Search with Dense Retrieval and Reranking](https://txt.cohere.com/using-llms-for-search/)
 - [Vector Databases](https://www.pinecone.io/learn/vector-database/)
