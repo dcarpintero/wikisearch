@@ -171,7 +171,7 @@ Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia 
 
 1. Clone the repository:
 ```
-git@github.com:dcarpintero/wise.git
+git@github.com:dcarpintero/wikisearch.git
 ```
 
 2. Create and Activate a Virtual Environment:
@@ -202,7 +202,7 @@ streamlit run ./app.py
 
 ## 👩‍💻 Streamlit Web App
 
-Demo Web App deployed to [Streamlit Cloud](https://streamlit.io/cloud/) and available at https://wise.streamlit.app/ 
+Demo Web App deployed to [Streamlit Cloud](https://streamlit.io/cloud/) and available at https://wikisearch.streamlit.app/ 
 
 # References
 - [Cohere Rerank](https://txt.cohere.com/rerank/)
