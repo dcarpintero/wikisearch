@@ -1,0 +1,4 @@
+cohere==4.27.0
+python-dotenv==1.0.0
+streamlit==1.26.0
+weaviate-client==3.24.1
