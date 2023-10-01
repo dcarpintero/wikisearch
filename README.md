@@ -1,6 +1,6 @@
-[![Open_inStreamlit](https://img.shields.io/badge/Open%20In-Streamlit-red?logo=Streamlit)](https://llamaindexchat.streamlit.app/)
+[![Open_inStreamlit](https://img.shields.io/badge/Open%20In-Streamlit-red?logo=Streamlit)](https://wikisearch.streamlit.app/)
 [![Python](https://img.shields.io/badge/python-%203.8-blue.svg)](https://www.python.org/)
-[![CodeFactor](https://www.codefactor.io/repository/github/dcarpintero/wise/badge)](https://www.codefactor.io/repository/github/dcarpintero/wise)
+[![CodeFactor](https://www.codefactor.io/repository/github/dcarpintero/wikisearch/badge)](https://www.codefactor.io/repository/github/dcarpintero/wikisearch)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/dcarpintero/st-newsapi-connector/blob/main/LICENSE)
 
 # 📚 Wikipedia Semantic Search with Reranking
