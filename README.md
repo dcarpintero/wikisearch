@@ -121,8 +121,7 @@ Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia 
 - **ReRank**:  [Cohere Rerank](https://txt.cohere.com/rerank/) re-organizes the Pre-Search by assigning a relevance score to each Pre-Search result given a user's query. Compared to embedding-based semantic search, it yields better search results — especially for complex and domain-specific queries.
 
 <p align="center">
-  <img src="https://txt.cohere.com/content/images/size/w1000/2023/04/data-src-image-3ce99123-fc91-4952-bc61-fcf36b810e18.png">
-  Source: Cohere
+  <img src="./static/search.png">
 </p>
 
 ```python
@@ -141,6 +140,11 @@ Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia 
         """
         return self.cohere.rerank(query=query, documents=documents, top_n=top_n, model=model)
 ```
+
+<p align="center">
+  <img src="https://txt.cohere.com/content/images/size/w1000/2023/04/data-src-image-3ce99123-fc91-4952-bc61-fcf36b810e18.png">
+  Source: Cohere
+</p>
 
 - **Answer Generation**: [Cohere Generate](https://txt.cohere.com/generative-ai-part-3/) composes a response based on the ranked results.
 
