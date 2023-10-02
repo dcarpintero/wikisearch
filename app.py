@@ -119,7 +119,7 @@ with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
     st.toggle('Dense Retrieval', key="with_near_text",
               on_change=onchange_with_near_text)
     st.toggle('Keyword Search', key="with_bm25", on_change=onchange_with_bm25)
-    st.toggle('Hybrid Mode',  key="with_hybrid",
+    st.toggle('Hybrid Mode', key="with_hybrid",
               on_change=onchange_with_hybrid)
     st.info("ℹ️ Note that *Dense Retrieval* and *Hybrid* outperform *Keyword Search* on complex queries!")
 
@@ -159,13 +159,13 @@ with col1:
     if st.button(label=samples["q1"], type="primary", disabled=btn_printing, on_click=onclick_sample_query, args=[samples["q1"]]):
         st.session_state.btn_printing = True
 with col2:
-    if st.button(label=samples["q2"], type="primary", disabled=btn_nobel,  on_click=onclick_sample_query, args=[samples["q2"]]):
+    if st.button(label=samples["q2"], type="primary", disabled=btn_nobel, on_click=onclick_sample_query, args=[samples["q2"]]):
         st.session_state.btn_nobel = True
 with col3:
-    if st.button(label=samples["q3"], type="primary", disabled=btn_internet,  on_click=onclick_sample_query, args=[samples["q3"]]):
+    if st.button(label=samples["q3"], type="primary", disabled=btn_internet, on_click=onclick_sample_query, args=[samples["q3"]]):
         st.session_state.btn_internet = True
 with col4:
-    if st.button(label=samples["q4"], type="primary", disabled=btn_ai,  on_click=onclick_sample_query, args=[samples["q4"]]):
+    if st.button(label=samples["q4"], type="primary", disabled=btn_ai, on_click=onclick_sample_query, args=[samples["q4"]]):
         st.session_state.btn_ai = True
 
 if query:
