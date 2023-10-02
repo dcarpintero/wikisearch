@@ -23,7 +23,11 @@ st.set_page_config(
 
 @st.cache_resource(show_spinner=False)
 def load_semantic_engine():
-    return wikipedia.SearchEngine()
+    try:
+        ws = wikipedia.SearchEngine()
+    except (OSError, EnvironmentError) as e:
+        st.error(f'Semantic Engine Error {e}')
+        st.stop()
 
 wikisearch = load_semantic_engine()
 
