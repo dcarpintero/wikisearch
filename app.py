@@ -120,7 +120,7 @@ with st.expander("ℹ️ ABOUT-THIS-APP", expanded=False):
 with st.sidebar:
     col_gh, col_co, col_we = st.columns([1,1,1])
     with col_gh:
-        "[![Github](https://img.shields.io/badge/Github%20Repo-gray?logo=Github)](https://github.com/dcarpintero/wise)"
+        "[![Github](https://img.shields.io/badge/Github%20Repo-gray?logo=Github)](https://github.com/dcarpintero/wikisearch)"
     with col_co:
         "[![Cohere](https://img.shields.io/badge/Cohere%20LLMs-purple)](https://cohere.com/?ref=https://github.com/dcarpintero)"
     with col_we:
