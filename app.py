@@ -24,7 +24,7 @@ st.set_page_config(
 @st.cache_resource(show_spinner=False)
 def load_semantic_engine():
     try:
-        ws = wikipedia.SearchEngine()
+        return wikipedia.SearchEngine()
     except (OSError, EnvironmentError) as e:
         st.error(f'Semantic Engine Error {e}')
         st.stop()
@@ -169,6 +169,9 @@ if query:
     with col1:
         st.subheader("🔎 1. Pre-Search")
 
+        if data is None:
+            st.warning("⚠️ No results found! Note that this App uses a Wikipedia subset")
+            st.stop()
         for idx, doc in enumerate(data):
             with st.expander(f'**{doc["title"]} [Rank: {idx+1}**]', expanded=False):
                 st.markdown(f'"*{doc["text"][:800]} [...]*" [Source]({doc["url"]})')
@@ -176,7 +179,11 @@ if query:
     with col2:
         st.subheader("🏆 2. Ranking")
 
-        data_ranked = wikisearch.rerank(query=query, documents=data, top_n=max_results, model=rank_model)
+        with st.spinner("Reranking..."):
+            data_ranked = wikisearch.rerank(query=query, documents=data, top_n=max_results, model=rank_model)
+        if data_ranked is None:
+            st.warning("⚠️ No results found! Note that this App uses a Wikipedia subset")
+            st.stop()
         for idx, r in enumerate(data_ranked):
             doc = r.document
             expanded = False
