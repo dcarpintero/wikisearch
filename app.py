@@ -83,7 +83,7 @@ languages = {
 
 samples = {
     'q1': 'Who invented the printing press, what was the key development for this?',
-    'q2': 'What are the top 3 highest mountains in the world?', 
+    'q2': 'What are the top 3 highest mountains on Earth?', 
     'q3': 'Who was the first person to win two Nobel prizes?',
     'q4': 'When and in which year were celebrated the first olimpic games?',
 }
