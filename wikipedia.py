@@ -108,10 +108,11 @@ class SearchEngine:
         return response["data"]["Get"]["Articles"]
     
     def with_llm(self, context, query, temperature=0.2, model="command", lang="english") -> list:
+        logging.info(f"with_hybrid(q={query}, t={temperature}, m={model}, l={lang})")	
         prompt = f"""
             Use the information provided below to answer the questions at the end. /
-            Include some curious or relevant facts extracted from the context. /
-            Generate the answer in the language of the query. If you cannot determine the language of the query use {lang}. /
+            Include in the answer some curious or relevant facts extracted from the context. /
+            Generate the answer in {lang} language. /
             If the answer to the question is not contained in the provided information, generate "The answer is not in the context".
             ---
             Context information:
