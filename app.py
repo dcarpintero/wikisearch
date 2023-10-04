@@ -19,7 +19,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        "About": "Built by @dcarpintero with Streamlit, Cohere and Weaviate"},
+        "About": "Built by @dcarpintero with Cohere and Weaviate"},
 )
 
 
@@ -121,7 +121,7 @@ with st.sidebar:
 # -----------------------------------------------------------------------------
 # Ask Wikipedia Section
 # -----------------------------------------------------------------------------
-st.subheader("🪄 Wikipedia Semantic Search with Cohere Rerank")
+st.subheader("🪄 Wikipedia Semantic Search")
 query = st.text_input(label="Ask 'Wikipedia'", placeholder='Ask your question here, or select one from the examples below',
                       key="user_query_txt", label_visibility="hidden")
 
