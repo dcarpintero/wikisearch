@@ -34,7 +34,6 @@ def load_semantic_engine():
 
 wikisearch = load_semantic_engine()
 
-
 @st.cache_data
 def query_bm25(query, lang='en', top_n=10):
     return wikisearch.with_bm25(query, lang=lang, top_n=top_n)
@@ -55,25 +54,6 @@ def query_llm(context, query, temperature, model, lang="english"):
         context=context, query=query, temperature=temperature, model=model, lang=lang)
     text = response.generations[0].text
     return text
-
-
-def onchange_with_near_text():
-    if st.session_state.with_near_text:
-        st.session_state.with_bm25 = False
-        st.session_state.with_hybrid = False
-
-
-def onchange_with_bm25():
-    if st.session_state.with_bm25:
-        st.session_state.with_near_text = False
-        st.session_state.with_hybrid = False
-
-
-def onchange_with_hybrid():
-    if st.session_state.with_hybrid:
-        st.session_state.with_near_text = False
-        st.session_state.with_bm25 = False
-
 
 def onclick_sample_query(query):
     st.write("onclick_sample_query: " + query)
@@ -116,13 +96,10 @@ with st.sidebar.expander("🤖 COHERE-SETTINGS", expanded=True):
                             max_value=15, value=10, step=1)
 
 with st.sidebar.expander("🔧 WEAVIATE-SETTINGS", expanded=True):
-    st.toggle('Dense Retrieval', key="with_near_text",
-              on_change=onchange_with_near_text)
-    st.toggle('Keyword Search', key="with_bm25", on_change=onchange_with_bm25)
-    st.toggle('Hybrid Mode', key="with_hybrid",
-              on_change=onchange_with_hybrid)
+    options = ["Dense Retrieval", "Keyword Search", "Hybrid Mode"]
+    search_mode = st.radio("Select your preferred Search Mode:", options, key="search-mode", index=0)
     st.info("ℹ️ Note that *Dense Retrieval* and *Hybrid* outperform *Keyword Search* on complex queries!")
-
+    
 with st.expander("ℹ️ ABOUT-THIS-APP", expanded=False):
     st.write("""
              - Multilingual RAG built with *Cohere* and the *Weaviate* demo database containing 10M Wikipedia embedding vectors (October 9th, 2021).
@@ -169,11 +146,11 @@ with col4:
         st.session_state.btn_ai = True
 
 if query:
-    if st.session_state.with_near_text:
+    if search_mode == "Dense Retrieval":
         data = query_neartext(query, lang=lang_code, top_n=max_results)
-    elif st.session_state.with_bm25:
+    elif search_mode == "Keyword Search":
         data = query_bm25(query, lang=lang_code, top_n=max_results)
-    elif st.session_state.with_hybrid:
+    elif search_mode == "Hybrid Mode":
         data = query_hybrid(query, lang=lang_code, top_n=max_results)
     else:
         st.info(
