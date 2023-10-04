@@ -108,7 +108,7 @@ class SearchEngine:
         return response["data"]["Get"]["Articles"]
     
     def with_llm(self, context, query, temperature=0.2, model="command", lang="english") -> list:
-        logging.info(f"with_hybrid(q={query}, t={temperature}, m={model}, l={lang})")	
+        logging.info(f"with_llm(q={query}, t={temperature}, m={model}, l={lang})")	
         prompt = f"""
             Use the information provided below to answer the questions at the end. /
             Include in the answer some curious or relevant facts extracted from the context. /
@@ -118,7 +118,7 @@ class SearchEngine:
             Context information:
             {context}
             ---
-            Question: 
+            Question:
             {query}
             """
         return self.cohere.generate(
