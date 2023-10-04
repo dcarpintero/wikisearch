@@ -56,7 +56,6 @@ def query_llm(context, query, temperature, model, lang="english"):
     return text
 
 def onclick_sample_query(query):
-    st.write("onclick_sample_query: " + query)
     st.session_state.user_query_txt = query
 
 
