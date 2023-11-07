@@ -36,24 +36,37 @@ wikisearch = load_semantic_engine()
 
 @st.cache_data
 def query_bm25(query, lang='en', top_n=10):
-    return wikisearch.with_bm25(query, lang=lang, top_n=top_n)
+    try:
+        return wikisearch.with_bm25(query, lang=lang, top_n=top_n)
+    except (Exception) as e:
+        st.error(f'Querying Engine Error {e}')
 
 
 @st.cache_data
 def query_neartext(query, lang='en', top_n=10):
-    return wikisearch.with_neartext(query, lang=lang, top_n=top_n)
+    try:
+        return wikisearch.with_neartext(query, lang=lang, top_n=top_n)
+    except (Exception) as e:
+        st.error(f'Querying Engine Error {e}')
 
 
 @st.cache_data
 def query_hybrid(query, lang='en', top_n=10):
-    return wikisearch.with_hybrid(query, lang=lang, top_n=top_n)
+    try:
+        return wikisearch.with_hybrid(query, lang=lang, top_n=top_n)
+    except (Exception) as e:
+        st.error(f'Querying Engine Error {e}')
 
 
 def query_llm(context, query, temperature, model, lang="english"):
-    response = wikisearch.with_llm(
-        context=context, query=query, temperature=temperature, model=model, lang=lang)
-    text = response.generations[0].text
-    return text
+    try:
+        response = wikisearch.with_llm(
+            context=context, query=query, temperature=temperature, model=model, lang=lang)
+        text = response.generations[0].text
+        return text
+    except (Exception) as e:
+        st.error(f'Querying Engine Error {e}')
+        
 
 def onclick_sample_query(query):
     st.session_state.user_query_txt = query
