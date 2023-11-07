@@ -2,6 +2,8 @@ import logging
 import os
 
 from dotenv import load_dotenv
+from tenacity import retry, wait_random_exponential, stop_after_attempt
+
 import cohere
 import weaviate
 
@@ -23,6 +25,7 @@ class SearchEngine:
                                                self.vars["WEAVIATE_URL"])
         logging.info("Initialized SearchEngine with Cohere and Weaviate clients")
 
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def with_bm25(self, query, lang='en', top_n=10) -> list:
         """
         Performs a keyword search (sparse retrieval) on Wikipedia Articles using embeddings stored in Weaviate.
@@ -50,6 +53,7 @@ class SearchEngine:
         )
         return response["data"]["Get"]["Articles"]
         
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def with_neartext(self, query, lang='en', top_n=10) -> list:
         """
         Performs a semantic search (dense retrieval) on Wikipedia Articles using embeddings stored in Weaviate.
@@ -80,6 +84,7 @@ class SearchEngine:
         )
         return response['data']['Get']['Articles']
     
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def with_hybrid(self, query, lang='en', top_n=10) -> list:
         """
         Performs a hybrid search on Wikipedia Articles using embeddings stored in Weaviate.
@@ -107,6 +112,7 @@ class SearchEngine:
         )
         return response["data"]["Get"]["Articles"]
     
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def with_llm(self, context, query, temperature=0.2, model="command", lang="english") -> list:
         logging.info(f"with_llm(q={query}, t={temperature}, m={model}, l={lang})")	
         prompt = f"""
@@ -129,6 +135,7 @@ class SearchEngine:
             model=model,
             )
         
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def rerank(self, query, documents, top_n=10, model='rerank-english-v2.0') -> dict:
         """
         Reranks a list of responses using Cohere's reranking API.
