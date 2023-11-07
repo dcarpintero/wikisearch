@@ -24,6 +24,7 @@ Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia 
 [Keyword Matching](https://weaviate.io/developers/weaviate/search/bm25/): it looks for objects that contain the search terms in their properties. The results are scored according to the [BM25F function](https://en.wikipedia.org/wiki/Okapi_BM25):
 
 ```python
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def with_bm25(self, query, lang='en', top_n=10) -> list:
         """
         Performs a keyword search (sparse retrieval) on Wikipedia Articles using embeddings stored in Weaviate.
@@ -55,6 +56,7 @@ Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia 
 [Dense Retrieval](https://weaviate.io/developers/weaviate/search/similarity): find objects most similar to a raw (un-vectorized) text:
 
 ```python
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def with_neartext(self, query, lang='en', top_n=10) -> list:
         """
         Performs a semantic search (dense retrieval) on Wikipedia Articles using embeddings stored in Weaviate.
@@ -90,6 +92,7 @@ Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia 
 [Hybrid Search](https://weaviate.io/developers/weaviate/search/hybrid/): produces results based on a weighted combination of results from a keyword (bm25) search and a vector search.
 
 ```python
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def with_hybrid(self, query, lang='en', top_n=10) -> list:
         """
         Performs a hybrid search on Wikipedia Articles using embeddings stored in Weaviate.
@@ -125,6 +128,7 @@ Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia 
 </p>
 
 ```python
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def rerank(self, query, documents, top_n=10, model='rerank-english-v2.0') -> dict:
         """
         Reranks a list of responses using Cohere's reranking API.
@@ -149,6 +153,7 @@ Streamlit App for **Multilingual Semantic Search** on over 10 million Wikipedia 
 - **Answer Generation**: [Cohere Generate](https://txt.cohere.com/generative-ai-part-3/) composes a response based on the ranked results.
 
 ```python
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def with_llm(self, context, query, temperature=0.2, model="command", lang="english") -> list:
         prompt = f"""
             Use the information provided below to answer the questions at the end. /
