@@ -167,6 +167,7 @@ class SearchEngine:
         logging.info("Environment variables loaded")
         return env_vars
 
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def __cohere_client(self, cohere_api_key):
         """
         Initialize Cohere client
@@ -179,6 +180,7 @@ class SearchEngine:
         """
         return cohere.Client(cohere_api_key)
 
+    @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
     def __weaviate_client(self, weaviate_api_key, cohere_api_key, cohere_url):
         """
         Initialize Weaviate client
